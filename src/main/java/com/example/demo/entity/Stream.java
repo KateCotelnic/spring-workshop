@@ -16,7 +16,7 @@ import java.util.List;
 public class Stream {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     private String name;

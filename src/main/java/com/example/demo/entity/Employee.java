@@ -1,9 +1,6 @@
 package com.example.demo.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.List;
@@ -22,11 +19,14 @@ public class Employee {
     private String name;
 
     @ManyToOne
+    @ToString.Exclude
     private Stream stream;
 
     @ManyToOne
+    @ToString.Exclude
     private Employee careerCouch;
 
     @OneToMany(mappedBy = "careerCouch")
+    @ToString.Exclude
     private List<Employee> couchingEmployees;
 }
