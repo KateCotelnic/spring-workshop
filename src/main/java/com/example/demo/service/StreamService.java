@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,7 +25,7 @@ public class StreamService{
     public void createStream(StreamDTO streamDTO){
         Stream stream = Stream.builder()
                 .name(streamDTO.getName())
-                .mentor(employeeRepository.getEmployeeByEmail(streamDTO.getMentor()))
+                .mentor(employeeRepository.getEmployeeByEmail(streamDTO.getMentor()).orElseThrow(() -> new NoSuchElementException("User doesn't exist")))
                 .department(streamDTO.getDepartment())
                 .employees(new ArrayList<>())
                 .build();
@@ -34,7 +35,7 @@ public class StreamService{
     public void setNewMentor(Long id, String mentorEmail){
         Stream stream = streamRepository.getStreamById(id);
         System.out.println(employeeRepository.getEmployeeByEmail(mentorEmail));
-        stream.setMentor(employeeRepository.getEmployeeByEmail(mentorEmail));
+        stream.setMentor(employeeRepository.getEmployeeByEmail(mentorEmail).orElseThrow(() -> new NoSuchElementException("User doesn't exist")));
         streamRepository.save(stream);
     }
 }

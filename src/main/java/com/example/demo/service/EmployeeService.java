@@ -3,12 +3,14 @@ package com.example.demo.service;
 import com.example.demo.entity.Employee;
 import com.example.demo.entity.Stream;
 import com.example.demo.entity.dto.EmployeeDTO;
+import com.example.demo.exception.UserAlreadyExistsException;
 import com.example.demo.repository.EmployeeRepository;
 import com.example.demo.repository.StreamRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,18 +28,23 @@ public class EmployeeService{
     }
 
     public void delete(String email){
-        employeeRepository.delete(employeeRepository.getEmployeeByEmail(email));
+        employeeRepository.delete(employeeRepository.getEmployeeByEmail(email).orElseThrow(() -> new NoSuchElementException("User doesn't exist")));
     }
 
     public void register(EmployeeDTO employeeDTO){
-        Stream stream = streamRepository.getStreamByDepartmentAndName(employeeDTO.getDepartment(), employeeDTO.getStream());
-        Employee employee = Employee.builder()
-                .email(employeeDTO.getEmail())
-                .password(employeeDTO.getPassword())
-                .name(employeeDTO.getName())
-                .stream(stream)
-                .careerCouch(employeeRepository.getEmployeeByEmail(stream.getMentor().getEmail()))
-                .build();
-        employeeRepository.save(employee);
+        try {
+            employeeRepository.getEmployeeByEmail(employeeDTO.getEmail()).orElseThrow(() -> new NoSuchElementException("User doesn't exist"));
+            throw new UserAlreadyExistsException("User with the provided email already exists");
+        } catch (NoSuchElementException e){
+            Stream stream = streamRepository.getStreamByDepartmentAndName(employeeDTO.getDepartment(), employeeDTO.getStream());
+            Employee employee = Employee.builder()
+                    .email(employeeDTO.getEmail())
+                    .password(employeeDTO.getPassword())
+                    .name(employeeDTO.getName())
+                    .stream(stream)
+                    .careerCouch(employeeRepository.getEmployeeByEmail(stream.getMentor().getEmail()).orElseThrow(() -> new NoSuchElementException("User doesn't exist")))
+                    .build();
+            employeeRepository.save(employee);
+        }
     }
 }
